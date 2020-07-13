@@ -1,0 +1,57 @@
+- name: create nsd group
+  group:
+    name: nsd
+    state: present
+
+- name: create nsd user
+  user:
+    name: nsd
+    group: nsd
+
+
+- name: Create nsd directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0744
+    owner: nsd
+    group: nsd
+  with_items:
+    - "{{ nsd_config_path }}"
+    - "{{ nsd_config_path }}/zones"
+    - "{{ nsd_config_path }}/conf.d"
+    - "/var/db/nsd"
+    - "/var/run/nsd"
+    - "/var/log/nsd"
+  become: yes
+
+- name: Enabled epel-release
+  yum:
+    name:
+      - epel-release
+    state: present
+  become: yes
+
+- name: Install nsd
+  yum:
+    name:
+      - nsd
+    state: present
+  become: yes
+
+
+- name: Install nsd.conf
+  template:
+    src: nsd.conf.j2
+    dest: "{{ nsd_config_path }}/nsd.conf"
+    mode: 0644
+    owner: nsd
+    group: nsd
+  become: yes
+
+
+- name: Start nsd
+  systemd:
+    name: nsd
+    state: started
+  become: yes

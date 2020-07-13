@@ -1,0 +1,4 @@
+- hosts: nsd
+  become: yes
+  roles:
+    - nsd
